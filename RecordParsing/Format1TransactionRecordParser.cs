@@ -17,20 +17,18 @@ namespace CompanyNS.TransactionProcessor.RecordParsing
             TransactionRecord record = new TransactionRecord();
 
             var fields = raw.Split(',');
-            if (fields.Length < 5)
-            {
-                record.badRawData = raw;
-                return record;
-            }
 
-            record.AccountName = fields[0];
-            record.Description = fields[4];
-
-            if (!parseCardNumber(fields[1], record) ||
+            // Rely on short-circuit evaluation to prevent 'index out of bounds' issues here
+            if (fields.Length < 5 ||
+                !parseCardNumber(fields[1], record) ||
                 !parseTransactionAmount(fields[2], record) ||
                 !parseTransactionType(fields[3], record) ||
                 !parseTargetCardNumber(fields, record))
                 record.badRawData = raw;
+
+
+            record.AccountName = fields[0];
+            record.Description = fields[4];
 
             return record;
         }
