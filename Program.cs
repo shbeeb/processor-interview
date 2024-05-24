@@ -86,6 +86,17 @@ class Program
 
     static void generateReports(ITransactionRepository repo)
     {
+        var delinquentAccounts = generateAccountReport(repo);
+        generateDelinquentAccountsReport(delinquentAccounts);
+        generateBadTransactionsReport(repo);
+    }
+
+    /**
+     * Produces list of delinquent accounts to avoid having to reiterate through all
+     * of the cards.
+     */
+    static HashSet<string> generateAccountReport(ITransactionRepository repo)
+    {
         var delinquentAccounts = new HashSet<string>();
 
         // Chart of accounts, the cards on those accounts, and the card balance
@@ -114,15 +125,20 @@ class Program
         }
         Console.WriteLine("--END: ACCOUNTS--");
 
-        // List of accounts that need to go to collections
+        return delinquentAccounts;
+    }
 
+    static void generateDelinquentAccountsReport(HashSet<string> delinquentAccounts)
+    {
         Console.WriteLine("\n--DELINQUENT ACCOUNTS--");
         foreach (var account in delinquentAccounts)
             Console.WriteLine(account);
 
         Console.WriteLine("--END: DELINQUENT ACCOUNTS--");
+    }
 
-
+    static void generateBadTransactionsReport(ITransactionRepository repo)
+    {
         // List of bad transactions
         Console.WriteLine("\n--BAD TRANSACTIONS--");
         foreach (var badRecord in repo.GetBadTransactions())

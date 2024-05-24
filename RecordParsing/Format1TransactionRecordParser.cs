@@ -24,20 +24,30 @@ namespace CompanyNS.TransactionProcessor.RecordParsing
             }
 
             record.AccountName = fields[0];
+            record.Description = fields[4];
 
-            if (!decimal.TryParse(fields[1], out record.CardNumber))
-            {
+            if (!parseCardNumber(fields[1], record) ||
+                !parseTransactionAmount(fields[2], record) ||
+                !parseTransactionType(fields[3], record) ||
+                !parseTargetCardNumber(fields, record))
                 record.badRawData = raw;
-                return record;
-            }
 
-            if (!decimal.TryParse(fields[2], out record.TransactionAmount))
-            {
-                record.badRawData = raw;
-                return record;
-            }
+            return record;
+        }
 
-            switch (fields[3].ToLower())
+        bool parseCardNumber(string raw, TransactionRecord record)
+        {
+            return decimal.TryParse(raw, out record.CardNumber);
+        }
+
+        bool parseTransactionAmount(string raw, TransactionRecord record)
+        {
+            return decimal.TryParse(raw, out record.TransactionAmount);
+        }
+
+        bool parseTransactionType(string raw, TransactionRecord record)
+        {
+            switch (raw.ToLower())
             {
                 case "credit":
                     record.TransactionType = TransactionType.Credit;
@@ -52,27 +62,20 @@ namespace CompanyNS.TransactionProcessor.RecordParsing
                     break;
 
                 default:
-                    record.badRawData = raw;
-                    return record;
+                    return false;
             }
 
-            record.Description = fields[4];
+            return true;
+        }
 
+        bool parseTargetCardNumber(string[] fields, TransactionRecord record)
+        {
             if (fields.Length > 5 && record.TransactionType == TransactionType.Transfer)
-            {
-                if (!decimal.TryParse(fields[5], out record.TargetCardNumber))
-                {
-                    record.badRawData = raw;
-                    return record;
-                }
-            }
-            else if (record.TransactionType == TransactionType.Transfer)
-            {
-                record.badRawData = raw;
-                return record;
-            }
+                return decimal.TryParse(fields[5], out record.TargetCardNumber);
 
-            return record;
+            // If it's a transfer type, but the fields length is less than or equal to 5, then
+            // the target card number field is missing.  Otherwise, we don't need that field.
+            return record.TransactionType != TransactionType.Transfer;
         }
     }
 }
