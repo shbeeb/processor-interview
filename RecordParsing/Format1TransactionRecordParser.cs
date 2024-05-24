@@ -28,7 +28,7 @@ namespace CompanyNS.TransactionProcessor.RecordParsing
 
 
             record.AccountName = fields[0];
-            record.Description = fields[4];
+            record.Description = fields.Length > 4 ? fields[4] : "";
 
             return record;
         }
