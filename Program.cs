@@ -119,7 +119,7 @@ class Program
                 Console.WriteLine($"\t{card}\t{balance}");
 
                 if (balance < 0)
-                    delinquentAccounts.Add(account);
+                    delinquentAccounts.Add($"{account}: {card} (Balance: {balance})");
             }
             Console.WriteLine("--\n");
         }
